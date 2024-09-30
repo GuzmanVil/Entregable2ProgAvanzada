@@ -1,17 +1,32 @@
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
+import clases.Pedido;
+import clases.ProcesadorPedidos;
+import java.util.PriorityQueue;
+
 public class Main {
-    public static void main(String[] args) {
-        // Press Alt+Intro with your caret at the highlighted text to see how
-        // IntelliJ IDEA suggests fixing it.
-        System.out.print("Hello and welcome!");
+    public static void main(String[] args) throws InterruptedException {
+        int numHilosUrgentes = 3;  // Número de hilos para procesar urgentes
+        int numHilosNormales = 5;  // Número de hilos para procesar normales
 
-        // Press Mayús+F10 or click the green arrow button in the gutter to run the code.
-        for (int i = 1; i <= 5; i++) {
+        ProcesadorPedidos procesador = new ProcesadorPedidos(numHilosUrgentes, numHilosNormales);
 
-            // Press Mayús+F9 to start debugging your code. We have set one breakpoint
-            // for you, but you can always add more by pressing Ctrl+F8.
-            System.out.println("i = " + i);
+        // Simulación de pedidos con urgencias
+        PriorityQueue<Pedido> colaPedidos = new PriorityQueue<>();
+        colaPedidos.add(new Pedido(1, false));
+        colaPedidos.add(new Pedido(2, true));  // clases.Pedido urgente
+        colaPedidos.add(new Pedido(3, false));
+        colaPedidos.add(new Pedido(4, true));  // clases.Pedido urgente
+        colaPedidos.add(new Pedido(5, false));
+
+        // Procesar los pedidos
+        while (!colaPedidos.isEmpty()) {
+            Pedido pedido = colaPedidos.poll();
+            procesador.procesarPedido(pedido);
         }
+
+        // Cerrar los servicios de forma ordenada
+        procesador.cerrar();
+        procesador.esperarCierre();
+
+        System.out.println("Todos los pedidos han sido procesados.");
     }
 }
