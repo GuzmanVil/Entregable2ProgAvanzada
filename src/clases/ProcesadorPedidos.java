@@ -1,54 +1,71 @@
 package clases;
-
-import java.util.List;
+import java.util.concurrent.*;
 
 public class ProcesadorPedidos {
+    private ThreadPoolExecutor procesadorUrgente;
+    private ThreadPoolExecutor procesadorNormal;
 
-    public ProcesadorPedidos() {}
+    public ProcesadorPedidos(int numHilosUrgentes, int numHilosNormales) {
+        this.procesadorUrgente = (ThreadPoolExecutor) Executors.newFixedThreadPool(numHilosUrgentes);
+        int coreHilos = Math.max(1, numHilosNormales / 2); // Aseguramos al menos un hilo
+        this.procesadorNormal = new ThreadPoolExecutor(
+                coreHilos, numHilosNormales,
+                60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>());
+    }
 
     public void procesarPedido(Pedido pedido) {
-        // Lista de tareas a ejecutar para un pedido
-        List<Runnable> tareas = List.of(
-                () -> procesarPago(pedido),
-                () -> empaquetarPedido(pedido),
-                () -> enviarPedido(pedido)
-        );
-        // Usar parallelStream para ejecutar las tareas en paralelo
-        tareas.parallelStream().forEach(Runnable::run);
+        if (pedido.isEsUrgente()) {
+            procesadorUrgente.submit(() -> procesarPago(pedido));
+        } else {
+            procesadorNormal.submit(() -> procesarPago(pedido));
+        }
     }
 
     private void procesarPago(Pedido pedido) {
+        System.out.println("Procesando pago del pedido: " + pedido.getId());
         try {
-            if (pedido.getId() == 999) {
-                throw new RuntimeException("Error procesando el pedido " + pedido.getId());
+            Thread.sleep(100);  // Simula tiempo de procesamiento
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Empaquetar y luego enviar el pedido
+        empaquetarPedidoEnParalelo(pedido);
+    }
+
+    // Paralelizar el empaquetado
+    private void empaquetarPedidoEnParalelo(Pedido pedido) {
+        ForkJoinPool.commonPool().execute(() -> {
+            System.out.println("Empaquetando el pedido: " + pedido.getId());
+            try {
+                Thread.sleep(100);  // Simula tiempo de empaquetado
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-            System.out.println("Procesando pago del pedido " + pedido.getId());
-            Thread.sleep(200); // Simulación de procesamiento de pago
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
+            // Después de empaquetar, realizar el envío
+            enviarPedido(pedido);
+        });
     }
 
-    private void empaquetarPedido(Pedido pedido) {
-        try {
-            System.out.println("Empaquetando pedido " + pedido.getId());
-            Thread.sleep(300); // Simulación de empaquetado
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
+    //función de envío
     private void enviarPedido(Pedido pedido) {
+        System.out.println("Enviando el pedido: " + pedido.getId());
         try {
-            System.out.println("Enviando pedido " + pedido.getId());
-            Thread.sleep(100); // Simulación de envío
+            Thread.sleep(100);  // Simula tiempo de envío
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
     public void cerrar() {
-        System.out.println("Procesamiento finalizado.");
+        procesadorUrgente.shutdown();
+        procesadorNormal.shutdown();
+    }
+
+    public void esperarCierre() throws InterruptedException {
+        procesadorUrgente.awaitTermination(1, TimeUnit.MINUTES);
+        procesadorNormal.awaitTermination(1, TimeUnit.MINUTES);
     }
 }
-
