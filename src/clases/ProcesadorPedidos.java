@@ -1,35 +1,20 @@
 package clases;
 
-import java.util.concurrent.*;
+import java.util.List;
 
 public class ProcesadorPedidos {
 
-    private final ThreadPoolExecutor procesadorUrgente;
-    private final ThreadPoolExecutor procesadorNormal;
-
-    // Constructor que recibe los números de hilos urgentes y normales
-    public ProcesadorPedidos(int numHilosUrgentes, int numHilosNormales) {
-        // Executor para pedidos urgentes con hilos fijos (sin PriorityBlockingQueue)
-        this.procesadorUrgente = (ThreadPoolExecutor) Executors.newFixedThreadPool(numHilosUrgentes);
-
-        // Executor para pedidos normales con ajuste dinámico de hilos
-        this.procesadorNormal = new ThreadPoolExecutor(
-                numHilosNormales / 2, numHilosNormales,
-                60L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>());
-    }
+    public ProcesadorPedidos() {}
 
     public void procesarPedido(Pedido pedido) {
-        // Procesar pedido urgente o normal basado en su prioridad
-        if (pedido.isEsUrgente()) {
-            procesadorUrgente.submit(() -> procesarPago(pedido));
-            procesadorUrgente.submit(() -> empaquetarPedido(pedido));
-            procesadorUrgente.submit(() -> enviarPedido(pedido));
-        } else {
-            procesadorNormal.submit(() -> procesarPago(pedido));
-            procesadorNormal.submit(() -> empaquetarPedido(pedido));
-            procesadorNormal.submit(() -> enviarPedido(pedido));
-        }
+        // Lista de tareas a ejecutar para un pedido
+        List<Runnable> tareas = List.of(
+                () -> procesarPago(pedido),
+                () -> empaquetarPedido(pedido),
+                () -> enviarPedido(pedido)
+        );
+        // Usar parallelStream para ejecutar las tareas en paralelo
+        tareas.parallelStream().forEach(Runnable::run);
     }
 
     private void procesarPago(Pedido pedido) {
@@ -63,12 +48,7 @@ public class ProcesadorPedidos {
     }
 
     public void cerrar() {
-        procesadorUrgente.shutdown();
-        procesadorNormal.shutdown();
-    }
-
-    public void esperarCierre() throws InterruptedException {
-        procesadorUrgente.awaitTermination(1, TimeUnit.MINUTES);
-        procesadorNormal.awaitTermination(1, TimeUnit.MINUTES);
+        System.out.println("Procesamiento finalizado.");
     }
 }
+
