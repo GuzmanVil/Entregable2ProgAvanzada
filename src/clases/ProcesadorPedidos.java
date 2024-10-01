@@ -21,7 +21,7 @@ public class ProcesadorPedidos {
 
     public void procesarPedido(Pedido pedido) {
         // Procesar pedido urgente o normal basado en su prioridad
-        if (pedido.esUrgente()) {
+        if (pedido.isEsUrgente()) {
             procesadorUrgente.submit(() -> procesarPago(pedido));
             procesadorUrgente.submit(() -> empaquetarPedido(pedido));
             procesadorUrgente.submit(() -> enviarPedido(pedido));

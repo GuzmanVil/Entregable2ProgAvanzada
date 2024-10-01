@@ -6,12 +6,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.PriorityQueue;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
-class ProcesadorPedidosTest {
+class ProcesamientoTest {
     private ProcesadorPedidos procesador;
 
     @BeforeEach
@@ -101,3 +100,4 @@ class ProcesadorPedidosTest {
         });
     }
 }
+

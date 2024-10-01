@@ -5,16 +5,17 @@ import org.junit.jupiter.api.Test;
 
 class PedidoTest {
     @Test
-    void testPedidoCreacion() {
+    void testCrearPedidoUrgente() {
         Pedido pedido = new Pedido(1, true);
         assertEquals(1, pedido.getId());
-        assertTrue(pedido.esUrgente());
+        assertTrue(pedido.isEsUrgente());
     }
 
     @Test
-    void testPedidoNoUrgente() {
+    void testCrearPedidoNoUrgente() {
         Pedido pedido = new Pedido(2, false);
-        assertFalse(pedido.esUrgente());
+        assertEquals(2, pedido.getId());
+        assertFalse(pedido.isEsUrgente());
     }
 
     @Test

@@ -4,8 +4,11 @@ public class Pedido implements Comparable<Pedido> {
     private int id;
     private boolean esUrgente;
 
-    public Pedido(int id, boolean esUrgente) {
-        this.id = id;
+    public boolean isEsUrgente() {
+        return esUrgente;
+    }
+
+    public void setEsUrgente(boolean esUrgente) {
         this.esUrgente = esUrgente;
     }
 
@@ -13,8 +16,13 @@ public class Pedido implements Comparable<Pedido> {
         return id;
     }
 
-    public boolean esUrgente() {
-        return esUrgente;
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Pedido(int id, boolean esUrgente) {
+        this.id = id;
+        this.esUrgente = esUrgente;
     }
 
     @Override
